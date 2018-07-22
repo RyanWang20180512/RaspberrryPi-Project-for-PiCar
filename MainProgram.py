@@ -51,29 +51,6 @@ def setCameraAction(command):
 
             
 
-def cameraActionThread():
-    '''This is a child thread to control the action of camera'''
-    #Init the steering module
-    steer=Steering(14,0,180,15,90,180,36,160)
-    steer.setup()
-    while stopCameraThread is False:
-        time.sleep(0.001) #It look like that a delay must be set, otherwise the progam runs 'blocking'
-        if cameraAction=='CamUp':
-            steer.Up()
-            continue
-        elif cameraAction=='CamDown':
-            steer.Down()
-            continue
-        elif cameraAction=='CamLeft':
-            steer.Left()
-            continue
-        elif cameraAction=='CamRight':
-            steer.Right()
-            continue
-        else:
-            pass
-    steer.cleanup()
-
 def main():
     '''The main thread, control the motor'''
     host=getLocalIp()
@@ -90,22 +67,21 @@ def main():
     motor=Motor(5,21,22,23,24,13)
     motor.setup()
 
-    #Set a state variable for steering module
-    global cameraActionState
+    #Init steering module
+    steer=Steering(14,0,180,15,90,180,36,160)
+    steer.setup()
+    global cameraActionState #Set a state variable for steering module
     cameraActionState='CamStop'
-    global stopCameraThread
-    stopCameraThread=False
+
     while True:
         try:
+            time.sleep(0.001)
             (client,addr)=tcpServer.accept()
             print('accept the client!')
             client.setblocking(0)
-            #stopCameraThread=False
-            #camera_action_thread=threading.Thread(target=cameraActionThread,args=())
-            #camera_action_thread.start()
-            steer=Steering(14,0,180,15,90,180,36,160)
-            steer.setup()
             while True:
+                time.sleep(0.001)
+                cameraAction(steer,cameraActionState)
                 try:
                     data=client.recv(1024)
                     data=bytes.decode(data)
@@ -114,24 +90,13 @@ def main():
                         break
                     motorAction(motor,data)
                     cameraActionState=setCameraAction(data)
-                    cameraAction(steer,cameraActionState)           
                 except socket.error:
-                    cameraAction(steer,cameraActionState)
-                    pass
-                #except Exception:
-                    #raise Exception
-            stopCameraThread=True #Notice the camera action thread to stop
+                    continue
         except socket.error:
             pass
         except Exception,e1:
             traceback.print_exc()
-            stopCameraThread=True
             motor.clear()
             steer.cleanup()
             tcpServer.close()
-        #finally:
-            #stopCameraThread=True
-            #motor.clear()
-            #tcpServer.close()
-            #steer.cleanup()
 main()

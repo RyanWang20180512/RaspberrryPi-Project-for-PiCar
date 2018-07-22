@@ -20,15 +20,14 @@ capture.set(cv2.CAP_PROP_FRAME_WIDTH,WIDTH)
 capture.set(cv2.CAP_PROP_FRAME_HEIGHT,HEIGHT)
 try:
     while True:
-        #time.sleep(0.5)
+        time.sleep(0.01)
         success,frame=capture.read()
-        while not success and frame is None:
-            success,frame=capture.read()
-        result,imgencode=cv2.imencode('.jpg',frame,[cv2.IMWRITE_JPEG_QUALITY,30])
-        #result,imgencode=cv2.imencode('.webp',frame,[cv2.IMWRITE_WEBP_QUALITY,20])
-        #print(len(imgencode))
-	server.sendall(imgencode)
-#	print('have sent one frame')
+        if success and frame is not None:
+            result,imgencode=cv2.imencode('.jpg',frame,[cv2.IMWRITE_JPEG_QUALITY,30])
+            #result,imgencode=cv2.imencode('.webp',frame,[cv2.IMWRITE_WEBP_QUALITY,20])
+            #print(len(imgencode))
+            server.sendall(imgencode)
+            #print('have sent one frame')
 except Exception as e:
     server.sendall(struct.pack('b',1))
     print(e)
