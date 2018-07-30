@@ -8,6 +8,7 @@ import time
 from SteeringModule.Steering import Steering
 import cv2
 import numpy
+from OledModule.OLED import OLED
 
 def getLocalIp():
     '''Get the local ip'''
@@ -73,11 +74,19 @@ def main():
     global cameraActionState #Set a state variable for steering module
     cameraActionState='CamStop'
 
+    #Init oled module
+    oled=OLED(16,20,0,0)
+    oled.setup()
+
+    oled.writeArea1(host)
+    oled.writeArea3('State:')
+    oled.writeArea4(' Disconnect')
     while True:
         try:
             time.sleep(0.001)
             (client,addr)=tcpServer.accept()
             print('accept the client!')
+            oled.writeArea4(' Connect')
             client.setblocking(0)
             while True:
                 time.sleep(0.001)
@@ -87,16 +96,25 @@ def main():
                     data=bytes.decode(data)
                     if(len(data)==0):
                         print('client is closed')
+                        oled.writeArea4(' Disconnect')
                         break
                     motorAction(motor,data)
                     cameraActionState=setCameraAction(data)
                 except socket.error:
                     continue
+                except KeyboardInterrupt,e:
+                    raise e
         except socket.error:
             pass
+        except KeyboardInterrupt:
+            motor.clear()
+            steer.cleanup()
+            tcpServer.close()
+            oled.clear()
         except Exception,e1:
             traceback.print_exc()
             motor.clear()
             steer.cleanup()
             tcpServer.close()
+            oled.clear()
 main()

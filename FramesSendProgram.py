@@ -23,7 +23,7 @@ try:
         time.sleep(0.01)
         success,frame=capture.read()
         if success and frame is not None:
-            result,imgencode=cv2.imencode('.jpg',frame,[cv2.IMWRITE_JPEG_QUALITY,30])
+            result,imgencode=cv2.imencode('.jpg',frame,[cv2.IMWRITE_JPEG_QUALITY,90])
             #result,imgencode=cv2.imencode('.webp',frame,[cv2.IMWRITE_WEBP_QUALITY,20])
             #print(len(imgencode))
             server.sendall(imgencode)

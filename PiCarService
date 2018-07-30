@@ -1,0 +1,27 @@
+#! /bin/bash
+### BEGIN INIT INFO
+# Provider: wang
+# Required-Start: $remote_fs
+# Required-Stop: $remote_fs
+# Default-Start:2 3 4 5
+# Default-Stop:0 1 6
+# Short-Description:Remote control pi car
+# Description:This service is used to start or stop Pi car programs
+### END INIT INFO
+case "$1" in
+    "start")
+       nice -n 1 /home/pi/PiCar/FramesSendProgram.py&
+       /home/pi/PiCar/MainProgram.py&
+       exit 1
+       ;;
+    "stop")
+       sudo killall FramesSendProgram.py
+       sudo killall MainProgram.py
+       exit 1
+       ;;
+    *)
+       echo "Usage:service PiCarService start|stop"
+       exit 1
+       ;;
+esac
+exit 0
